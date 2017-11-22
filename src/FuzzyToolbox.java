@@ -2,7 +2,7 @@ import java.util.ArrayList;
 
 public class FuzzyToolbox {
 	
-	public static void performFuzzyLogic(ArrayList<SetsBlock> setsBlocks,SetsBlock output){
+	public static void performFuzzyLogic(ArrayList<SetsBlock> setsBlocks,ArrayList<Rule> rules,SetsBlock output){
 		
 		// fuzzification step
 		for(int blockIndex = 0;blockIndex < setsBlocks.size();blockIndex++){
@@ -10,6 +10,9 @@ public class FuzzyToolbox {
 		}
 		
 		// inference step
+		for(int NumofRules = 0;NumofRules < rules.size();NumofRules++){
+			inference(rules.get(NumofRules),setsBlocks);
+		}
 		
 		// defuzzification step
 		
@@ -40,4 +43,46 @@ public class FuzzyToolbox {
 			}
 		}
 	}
+	
+	private static void inference(Rule rule,ArrayList<SetsBlock> setsBlocks){
+		double position=0, angel=0;
+		for(int blockIndex = 0;blockIndex < setsBlocks.size();blockIndex++){
+			if(setsBlocks.get(blockIndex).variableName.equals("position")){
+				for(int shapeIndex = 0;shapeIndex < setsBlocks.get(blockIndex).shapes.size();shapeIndex++){
+					String operation=setsBlocks.get(blockIndex).shapes.get(shapeIndex).name;
+					if(operation.equals(rule.position)){
+						position=setsBlocks.get(blockIndex).shapes.get(shapeIndex).valueOfCrisp;
+					}
+				}
+			}else if(setsBlocks.get(blockIndex).variableName.equals("angel")){
+				for(int shapeIndex = 0;shapeIndex < setsBlocks.get(blockIndex).shapes.size();shapeIndex++){
+					String operation=setsBlocks.get(blockIndex).shapes.get(shapeIndex).name;
+					if(operation.equals(rule.angel)){
+						angel=setsBlocks.get(blockIndex).shapes.get(shapeIndex).valueOfCrisp;
+					}
+				}
+			}
+		}
+		for(int premis=1 ; premis<rule.premises ; premis++){
+			if(rule.predict.equals("AND")){
+				if(position<angel)
+					rule.result=position;
+				else
+					rule.result=angel;
+			}else if(rule.predict.equals("OR")){
+				if(position>angel)
+					rule.result=position;
+				else
+					rule.result=angel;
+			}
+		}
+	}
 }
+
+
+
+
+
+
+
+
