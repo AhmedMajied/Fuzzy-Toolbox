@@ -45,7 +45,6 @@ public class FuzzyToolbox {
 			}
 		}
 	}
-<<<<<<< HEAD
 	
 	private static void inference(Rule rule,ArrayList<SetsBlock> setsBlocks){
 		double position=0, angel=0;
@@ -79,7 +78,7 @@ public class FuzzyToolbox {
 					rule.result=angel;
 			}
 		}
-=======
+	}
 	public static double defuzzify(ArrayList<Pair>inferenceResult,SetsBlock output) {
 		Map<String,Double> centroid=new HashMap<String,Double>();
 		for(int i=0;i<output.shapes.size();++i) {
@@ -112,7 +111,6 @@ public class FuzzyToolbox {
 		}
 		
 		return sum/a;
->>>>>>> 1c0ac8e06adbd53fee177a72b36f11b5440ff0bc
 	}
 }
 
