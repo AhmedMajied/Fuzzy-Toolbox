@@ -1,4 +1,6 @@
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FuzzyToolbox {
 	
@@ -43,6 +45,7 @@ public class FuzzyToolbox {
 			}
 		}
 	}
+<<<<<<< HEAD
 	
 	private static void inference(Rule rule,ArrayList<SetsBlock> setsBlocks){
 		double position=0, angel=0;
@@ -76,6 +79,40 @@ public class FuzzyToolbox {
 					rule.result=angel;
 			}
 		}
+=======
+	public static double defuzzify(ArrayList<Pair>inferenceResult,SetsBlock output) {
+		Map<String,Double> centroid=new HashMap<String,Double>();
+		for(int i=0;i<output.shapes.size();++i) {
+			centroid.put(output.shapes.get(i).name,getCentroid(output.shapes.get(i).points));
+		}
+		double sum1=0;
+		double sum2=0;
+		for(Pair i : inferenceResult) {
+			sum1+=i.value*centroid.get(i.name);
+			sum2+=i.value;
+		}
+		
+		return sum1/sum2;
+	}
+	
+	public static double A(ArrayList<Point>points) {
+		double sum=0;
+		for(int i=0;i<points.size()-1;++i) {
+			sum+=points.get(i+1).y*points.get(i).x-points.get(i+1).x*points.get(i).y;
+		}
+		
+		return sum/2;
+	}
+	
+	public static double getCentroid(ArrayList<Point>points) {
+		double a = 6*A(points);
+		double sum=0;
+		for(int i=0;i<points.size()-1;++i) {
+			sum+=(points.get(i+1).x+points.get(i).x)*(points.get(i+1).y*points.get(i).x-points.get(i+1).x*points.get(i).y);
+		}
+		
+		return sum/a;
+>>>>>>> 1c0ac8e06adbd53fee177a72b36f11b5440ff0bc
 	}
 }
 
