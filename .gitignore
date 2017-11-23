@@ -4,3 +4,4 @@ src/FuzzyToolbox.java
 src/Pair.java
 *.java
 *.java
+/bin/

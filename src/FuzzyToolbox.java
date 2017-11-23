@@ -1,22 +1,22 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Stack;
 
 public class FuzzyToolbox {
 	
-	public static void performFuzzyLogic(ArrayList<SetsBlock> setsBlocks,ArrayList<Rule> rules,SetsBlock output){
+	public static double performFuzzyLogic(ArrayList<SetsBlock> setsBlocks,ArrayList<Rule> rules,SetsBlock output){
 		
 		// fuzzification step
 		for(int blockIndex = 0;blockIndex < setsBlocks.size();blockIndex++){
 			fuzzyfying(setsBlocks.get(blockIndex));
 		}
-		
 		// inference step
 		for(int NumofRules = 0;NumofRules < rules.size();NumofRules++){
 			inference(rules.get(NumofRules),setsBlocks);
 		}
 		
-		// defuzzification step
+		return defuzzify(rules,output);
 		
 	}
 	
@@ -28,10 +28,16 @@ public class FuzzyToolbox {
 			
 			// calculate value of y which is intersection between crisp and shape
 			for(int pointIndex = 1;pointIndex < shape.points.size();pointIndex++){
-				if(shape.points.get(pointIndex).x > setsBlock.varaibleCrisp){
+				if(shape.points.get(pointIndex).x >= setsBlock.varaibleCrisp && shape.points.get(pointIndex-1).x <= setsBlock.varaibleCrisp){
 					// horizontal line (in trapezoidal)
 					if(shape.points.get(pointIndex).y == shape.points.get(pointIndex-1).y){
 						shape.valueOfCrisp = shape.points.get(pointIndex).y;
+					}
+					else if (shape.points.get(pointIndex).x == setsBlock.varaibleCrisp) {
+						shape.valueOfCrisp = shape.points.get(pointIndex).y;
+					}
+					else if (shape.points.get(pointIndex-1).x == setsBlock.varaibleCrisp) {
+						shape.valueOfCrisp = shape.points.get(pointIndex-1).y;
 					}
 					else if(shape.points.get(pointIndex).x != shape.points.get(pointIndex-1).x){
 						slope = (shape.points.get(pointIndex).y - shape.points.get(pointIndex-1).y) /
@@ -39,7 +45,6 @@ public class FuzzyToolbox {
 						
 						shape.valueOfCrisp = slope * setsBlock.varaibleCrisp;
 					}
-					
 					break;
 				}
 			}
@@ -47,48 +52,60 @@ public class FuzzyToolbox {
 	}
 	
 	private static void inference(Rule rule,ArrayList<SetsBlock> setsBlocks){
-		double position=0, angel=0;
-		for(int blockIndex = 0;blockIndex < setsBlocks.size();blockIndex++){
-			if(setsBlocks.get(blockIndex).variableName.equals("position")){
-				for(int shapeIndex = 0;shapeIndex < setsBlocks.get(blockIndex).shapes.size();shapeIndex++){
-					String operation=setsBlocks.get(blockIndex).shapes.get(shapeIndex).name;
-					if(operation.equals(rule.position)){
-						position=setsBlocks.get(blockIndex).shapes.get(shapeIndex).valueOfCrisp;
-					}
-				}
-			}else if(setsBlocks.get(blockIndex).variableName.equals("angel")){
-				for(int shapeIndex = 0;shapeIndex < setsBlocks.get(blockIndex).shapes.size();shapeIndex++){
-					String operation=setsBlocks.get(blockIndex).shapes.get(shapeIndex).name;
-					if(operation.equals(rule.angel)){
-						angel=setsBlocks.get(blockIndex).shapes.get(shapeIndex).valueOfCrisp;
+		Pair temb;
+		String operation;
+		Stack<Double> ValueOfCrisp = new Stack<Double>();
+		for(int i=rule.input.size()-1;i>=0;i--){
+			temb=rule.input.get(i);
+			for(int blockIndex = 0;blockIndex < setsBlocks.size();blockIndex++){
+				if(setsBlocks.get(blockIndex).variableName.equals(temb.name)){
+					for(int shapeIndex = 0;shapeIndex < setsBlocks.get(blockIndex).shapes.size();shapeIndex++){
+						operation=setsBlocks.get(blockIndex).shapes.get(shapeIndex).name;
+						
+						if(operation.equals(temb.value)){
+							ValueOfCrisp.push(setsBlocks.get(blockIndex).shapes.get(shapeIndex).valueOfCrisp);
+							break;
+						}
 					}
 				}
 			}
 		}
-		for(int premis=1 ; premis<rule.premises ; premis++){
-			if(rule.predict.equals("AND")){
-				if(position<angel)
-					rule.result=position;
-				else
-					rule.result=angel;
-			}else if(rule.predict.equals("OR")){
-				if(position>angel)
-					rule.result=position;
-				else
-					rule.result=angel;
-			}
+		
+		Stack<Double> resultOfRules = new Stack<>();
+		while(!rule.predicts.empty() && !ValueOfCrisp.empty()){
+			resultOfRules.push(applyPredict(ValueOfCrisp.pop(),ValueOfCrisp.pop(),rule.predicts.pop()));
 		}
+		rule.result=resultOfRules.pop();
 	}
-	public static double defuzzify(ArrayList<Pair>inferenceResult,SetsBlock output) {
+	
+	public static double applyPredict(double first,double second,String op){
+		double temb=-1;
+		
+		if(op.equals("OR")){
+			if(first<second)
+				temb=second;
+			else
+				temb=first;
+		}else if(op.equals("AND")){
+			if(first>second)
+				temb=second;
+			else
+				temb=first;
+		}
+		
+		return temb;
+	}
+	
+	public static double defuzzify(ArrayList<Rule>inferenceResult,SetsBlock output) {
 		Map<String,Double> centroid=new HashMap<String,Double>();
 		for(int i=0;i<output.shapes.size();++i) {
 			centroid.put(output.shapes.get(i).name,getCentroid(output.shapes.get(i).points));
 		}
 		double sum1=0;
 		double sum2=0;
-		for(Pair i : inferenceResult) {
-			sum1+=i.value*centroid.get(i.name);
-			sum2+=i.value;
+		for(int i=0;i<inferenceResult.size();++i) {
+			sum1+=inferenceResult.get(i).result*centroid.get(inferenceResult.get(i).predictedSetsBlockName);
+			sum2+=inferenceResult.get(i).result;
 		}
 		
 		return sum1/sum2;

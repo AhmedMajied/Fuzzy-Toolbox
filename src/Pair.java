@@ -1,5 +1,10 @@
 
 public class Pair {
-	double value;
 	String name;
+	String value;
+	
+	public Pair(String name,String value){
+		this.name=name;
+		this.value=value;
+	}
 }

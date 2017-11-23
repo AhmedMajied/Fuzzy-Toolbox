@@ -1,18 +1,18 @@
+import java.util.ArrayList;
+import java.util.Stack;
 
 public class Rule {
-	public double premises;//from input
+	public int premises;
 	public double result;
-	public String predict;//from input ("AND" || "OR")
-	public String position;//from input ("Left","LeftCenter",...)
-	public String angel;//from input ("RBelow","RUpper",...)
-	public String firePosition;//from input ("NegBig","NegSm",...)
+	public Stack<String> predicts;
+	public ArrayList<Pair> input;
+	public String predictedSetsBlockName;
 	
-	public Rule(double premises,double result,String predict,String position,String angel,String firePosition){
+	public Rule(int premises,double result,Stack<String> predict,ArrayList<Pair> input,String predictedSetsBlockName){
 		this.premises = premises;
 		this.result = result;
-		this.predict = predict;
-		this.position = position;
-		this.angel = angel;
-		this.firePosition = firePosition;
+		this.predicts = predict;
+		this.input = input;
+		this.predictedSetsBlockName = predictedSetsBlockName;
 	}
 }
